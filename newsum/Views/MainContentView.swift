@@ -3,6 +3,8 @@ import SwiftUI
 struct MainContentView: View {
     // Use @StateObject to create and manage the ViewModel instance
     @StateObject private var viewModel = NewsViewModel()
+    // State to control the info sheet presentation
+    @State private var showingInfoSheet = false
 
     var body: some View {
         NavigationView {
@@ -30,7 +32,6 @@ struct MainContentView: View {
                                 await viewModel.fetchNews()
                             }
                         }
-                        .disabled(viewModel.isLoading)
                         .buttonStyle(.borderedProminent)
                         .padding(.top)
                     }
@@ -41,12 +42,8 @@ struct MainContentView: View {
                  } else {
                     // Show the list of news summaries
                     List(viewModel.summaries) { summary in
-                        // Wrap NewsRow in a NavigationLink
-                        NavigationLink {
-                            // Destination: The detail view
-                            NewsDetailView(summary: summary)
-                        } label: {
-                            // Label: The row view itself
+                        // Wrap the row in a NavigationLink
+                        NavigationLink(destination: SummaryDetailView(summary: summary)) {
                             NewsRow(summary: summary)
                         }
                     }
@@ -56,12 +53,26 @@ struct MainContentView: View {
                     }
                 }
             }
-            .navigationTitle("Hourly News") // Set the title for the navigation bar
+            .navigationTitle("Newsum Daily") // Set the title for the navigation bar
+            // Add toolbar for the info button
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingInfoSheet = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                }
+            }
             .task { // Fetch data when the view first appears
                 // Avoid fetching again if data already exists (e.g., after backgrounding)
                 if viewModel.summaries.isEmpty {
                     await viewModel.fetchNews()
                 }
+            }
+            // Present the sheet when showingInfoSheet is true
+            .sheet(isPresented: $showingInfoSheet) {
+                InfoView()
             }
         }
     }

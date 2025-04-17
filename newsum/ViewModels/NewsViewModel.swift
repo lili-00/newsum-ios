@@ -14,16 +14,22 @@ class NewsViewModel: ObservableObject {
         if !isRefreshing {
              isLoading = true
         }
-        errorMessage = nil
+        // Clear error message only on initial load
+        if !isRefreshing {
+            errorMessage = nil
+        }
 
         do {
-            summaries = try await networkManager.fetchLatestSummaries()
+            let fetchedSummaries = try await networkManager.fetchLatestSummaries()
+            summaries = fetchedSummaries
+            errorMessage = nil // Clear previous error on success
         } catch let error as NetworkError {
             errorMessage = mapErrorToMessage(error)
-            summaries = [] // Clear summaries on error
+            // Optionally clear summaries or keep stale data on error
+            // summaries = [] 
         } catch {
             errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
-            summaries = []
+            // summaries = []
         }
 
         isLoading = false

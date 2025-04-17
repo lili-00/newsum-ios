@@ -24,7 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0A356B242DB0A5F200DDE76F /* newsum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = newsum.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A356B242DB0A5F200DDE76F /* Newsum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Newsum.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A356B392DB0A5F400DDE76F /* newsumTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = newsumTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A356B432DB0A5F400DDE76F /* newsumUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = newsumUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -98,7 +98,7 @@
 		0A356B252DB0A5F200DDE76F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0A356B242DB0A5F200DDE76F /* newsum.app */,
+				0A356B242DB0A5F200DDE76F /* Newsum.app */,
 				0A356B392DB0A5F400DDE76F /* newsumTests.xctest */,
 				0A356B432DB0A5F400DDE76F /* newsumUITests.xctest */,
 			);
@@ -127,7 +127,7 @@
 			packageProductDependencies = (
 			);
 			productName = newsum;
-			productReference = 0A356B242DB0A5F200DDE76F /* newsum.app */;
+			productReference = 0A356B242DB0A5F200DDE76F /* Newsum.app */;
 			productType = "com.apple.product-type.application";
 		};
 		0A356B382DB0A5F400DDE76F /* newsumTests */ = {
@@ -425,7 +425,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.li.newsum;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Newsum;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -456,7 +456,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.li.newsum;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Newsum;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
