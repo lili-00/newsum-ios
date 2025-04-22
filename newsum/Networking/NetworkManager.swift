@@ -5,7 +5,7 @@ class NetworkManager {
     static let shared = NetworkManager()
 
     // Base URL for the API
-    private let baseURL = "https://www.newsums.com/api"
+    private let baseURL = "https://api.newsums.com/api"
 
     // JSON Decoder configured for date parsing
     private let decoder: JSONDecoder = {
