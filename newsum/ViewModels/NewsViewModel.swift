@@ -34,18 +34,4 @@ class NewsViewModel: ObservableObject {
 
         isLoading = false
     }
-
-    // Helper to provide user-friendly error messages
-    private func mapErrorToMessage(_ error: NetworkError) -> String {
-        switch error {
-        case .invalidURL:
-            return "Invalid API endpoint URL."
-        case .requestFailed(let underlyingError):
-            return "Failed to fetch news. Check your connection. Error: \(underlyingError.localizedDescription)"
-        case .invalidResponse:
-            return "Received an invalid response from the server."
-        case .decodingError(let underlyingError):
-            return "Failed to process news data. Error: \(underlyingError.localizedDescription)"
-        }
-    }
 } 

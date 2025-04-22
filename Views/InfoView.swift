@@ -3,15 +3,17 @@ import SwiftUI
 struct InfoView: View {
     var body: some View {
         // Use a ScrollView in case content grows, though not strictly needed now
-        VStack {
+        ScrollView {
             VStack(alignment: .leading, spacing: 24) { // Increased spacing
                 // App Icon and Name
                 HStack(spacing: 16) {
-                    Image("app_logo") // Use app-relevant icon
+                    Image(systemName: "newspaper.fill") // Use app-relevant icon
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 50, height: 50)
-//                        .padding(12)
+                        .frame(width: 44, height: 44)
+                        .foregroundColor(.accentColor) // Use accent color
+                        .padding(12)
+                        .background(Color.accentColor.opacity(0.15))
                         .clipShape(Circle()) // Circular background
 
                     Text("Newsum")
@@ -25,7 +27,7 @@ struct InfoView: View {
                     Text("About Newsum")
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text("Newsum provides summaries of the headlines from various top sources and updated hourly. The app is all you need for crucial information. Stop you from endless scrolling.")
+                    Text("Newsum provides concise summaries of the latest news headlines, fetched from various sources and updated regularly. Stay informed quickly and efficiently.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .lineSpacing(4) // Improve readability
@@ -62,4 +64,4 @@ struct InfoView: View {
 
 #Preview {
     InfoView()
-}
+} 
