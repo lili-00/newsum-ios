@@ -12,61 +12,70 @@ struct HeadlineRow: View {
     let headline: HeadlineSummary
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) { // Align items to the top
-            // Image using AsyncImage
-            AsyncImage(url: URL(string: headline.imageUrl ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    // Placeholder while loading
-                    ProgressView()
-                        .frame(width: 80, height: 80) // Maintain size consistency
-                case .success(let image):
-                    // Display the loaded image
-                    image
-                        .resizable()
-                        .scaledToFill()
-//                        .aspectRatio(contentMode: .) // Fill the frame
-                        .frame(width: 80, height: 80)   // Fixed frame size
-                        .clipped()                       // Clip excess
-                        .clipShape(RoundedRectangle(cornerRadius: 8)) // Rounded corners
-                case .failure:
-                    // Placeholder for error or missing URL
-                    Image(systemName: "photo.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 60, alignment: .center)
-                        .foregroundColor(.secondary)
-                        .background(Color(.systemGray5)) // Subtle background
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                @unknown default:
-                    EmptyView() // Handle future cases
+        // Wrap the entire content in a card-like container
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 12) { // Align items to the top
+                // Image using AsyncImage
+                AsyncImage(url: URL(string: headline.imageUrl ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        // Placeholder while loading
+                        ProgressView()
+                            .frame(width: 80, height: 80) // Maintain size consistency
+                    case .success(let image):
+                        // Display the loaded image
+                        image
+                            .resizable()
+                            .scaledToFill()
+//                            .aspectRatio(contentMode: .) // Fill the frame
+                            .frame(width: 80, height: 80)   // Fixed frame size
+                            .clipped()                       // Clip excess
+                            .clipShape(RoundedRectangle(cornerRadius: 8)) // Rounded corners
+                    case .failure:
+                        // Placeholder for error or missing URL
+                        Image(systemName: "photo.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 60, alignment: .center)
+                            .foregroundColor(.secondary)
+                            .background(Color(.systemGray5)) // Subtle background
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    @unknown default:
+                        EmptyView() // Handle future cases
+                    }
                 }
+
+                // Text Content
+                VStack(alignment: .leading, spacing: 4) {
+                    // Source Name - Smaller, medium weight
+                    Text(headline.sourceName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1) // Ensure source doesn't wrap excessively
+
+                    // Title - Regular weight, allows multiple lines
+                    Text(headline.title)
+                        .font(.headline) // Use headline font style
+                        .fontWeight(.semibold) // Make it stand out a bit
+                        .lineLimit(3) // Allow title to wrap
+
+                    // Published Date - Relative format
+                    Text(headline.publishedAt, style: .relative) // E.g., "5 minutes ago"
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+                        .padding(.top, 2) // Add slight space above the date
+                }
+                Spacer() // Push content to the left
             }
-
-            // Text Content
-            VStack(alignment: .leading, spacing: 4) {
-                // Source Name - Smaller, medium weight
-                Text(headline.sourceName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1) // Ensure source doesn't wrap excessively
-
-                // Title - Regular weight, allows multiple lines
-                Text(headline.title)
-                    .font(.headline) // Use headline font style
-                    .fontWeight(.semibold) // Make it stand out a bit
-                    .lineLimit(3) // Allow title to wrap
-
-                // Published Date - Relative format
-                Text(headline.publishedAt, style: .relative) // E.g., "5 minutes ago"
-                    .font(.footnote)
-                    .foregroundColor(.gray)
-                    .padding(.top, 2) // Add slight space above the date
-            }
-            Spacer() // Push content to the left
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.vertical, 8) // Add some vertical padding to the row
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.1), radius:.pi * 2)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 }
 
@@ -99,9 +108,11 @@ struct HeadlineRow: View {
         sourceUrl: "https://localgazette.com"
     )
 
-    return List {
-        HeadlineRow(headline: sampleHeadline)
-        HeadlineRow(headline: sampleHeadlineNoImage)
+    return ScrollView {
+        VStack(spacing: 0) {
+            HeadlineRow(headline: sampleHeadline)
+            HeadlineRow(headline: sampleHeadlineNoImage)
+        }
     }
-    .listStyle(.plain)
+    .background(Color(.systemGroupedBackground))
 }
