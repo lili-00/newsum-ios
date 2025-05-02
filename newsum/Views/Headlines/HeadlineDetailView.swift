@@ -15,33 +15,33 @@ struct HeadlineDetailView: View {
     @State private var showActionMenu: Bool = false
     @State private var showSafari: Bool = false
     @State private var isButtonPressed: Bool = false
+    @AppStorage("textSizeMultiplier") private var textSizeMultiplier: Double = 1.0
     
     var body: some View {
         ZStack {
             ScrollView { // Allow scrolling for potentially long content
                 VStack(alignment: .leading, spacing: 15) {
                     Text(headline.title)
-                        .font(.title3)
-                        .fontWeight(.bold)
+                        .font(.system(size: 20 * textSizeMultiplier, weight: .bold))
                         .padding(.top, 4)
 
                     HStack(spacing: 4) {
                         Text("Source:")
-                            .font(.subheadline)
+                            .font(.system(size: 13 * textSizeMultiplier))
                             .foregroundColor(.secondary)
 
                         if let srcURL = URL(string: headline.sourceUrl) {
                             Link(headline.sourceName, destination: srcURL)
-                                .font(.subheadline)
+                                .font(.system(size: 13 * textSizeMultiplier))
                         } else {
                             Text(headline.sourceName)
-                                .font(.subheadline)
+                                .font(.system(size: 13 * textSizeMultiplier))
                                 .foregroundColor(.secondary)
                         }
                     }
 
                     Text("Published: \(headline.publishedAt, style: .date) at \(headline.publishedAt, style: .time)")
-                        .font(.subheadline)
+                        .font(.system(size: 13 * textSizeMultiplier))
                         .foregroundColor(.gray)
 
                     Divider()
@@ -68,7 +68,7 @@ struct HeadlineDetailView: View {
                     }
 
                     Text(headline.summary)
-                        .font(.system(.body, design: .serif))
+                        .font(.system(size: 17 * textSizeMultiplier, design: .serif))
                         // Add line spacing for better readability
                         .lineSpacing(5)
                     
@@ -87,7 +87,7 @@ struct HeadlineDetailView: View {
                         } label: {
                             HStack {
                                 Text("Read full article")
-                                    .fontWeight(.medium)
+                                    .font(.system(size: 16 * textSizeMultiplier, weight: .medium))
                                 Image(systemName: "safari")
                             }
                             .frame(maxWidth: .infinity)
@@ -111,6 +111,7 @@ struct HeadlineDetailView: View {
                 VStack {
                     Spacer()
                     Text("Link copied to clipboard")
+                        .font(.system(size: 14 * textSizeMultiplier))
                         .padding()
                         .background(Color.black.opacity(0.7))
                         .foregroundColor(.white)

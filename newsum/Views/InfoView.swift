@@ -1,51 +1,70 @@
 import SwiftUI
 
-struct InfoView: View {
+struct SettingsView: View {
+    @AppStorage("textSizeMultiplier") private var textSizeMultiplier: Double = 1.0
+    
     var body: some View {
-        // Use a ScrollView in case content grows, though not strictly needed now
-        VStack {
-            VStack(alignment: .leading, spacing: 24) { // Increased spacing
-                // App Icon and Name
-                HStack(spacing: 16) {
-                    Image("app_logo") // Use app-relevant icon
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-//                        .padding(12)
-                        .clipShape(Circle()) // Circular background
+        NavigationView {
+            List {
+                // Text Size Section
+                Section(header: Text("Reading")) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Text Size")
+                            .font(.headline)
+                        
+                        HStack {
+                            Text("A")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                            
+                            Slider(value: $textSizeMultiplier, in: 0.8...1.4, step: 0.1)
+                                .accentColor(.blue)
+                            
+                            Text("A")
+                                .font(.system(size: 24))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        // Preview text
+                        Text("Preview text at current size")
+                            .font(.system(size: 17 * textSizeMultiplier))
+                            .padding(.top, 4)
+                    }
+                    .padding(.vertical, 8)
+                }
+                
+                // About Section
+                Section(header: Text("About")) {
+                    // App Info
+                    HStack(spacing: 16) {
+                        Image("app_logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    Text("Newsum")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        VStack(alignment: .leading) {
+                            Text("Newsum")
+                                .font(.headline)
+                            Text("Version \(appVersion())")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    
+                    // About Text
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Newsum provides summaries of the headlines from various top sources and updated hourly. The app is all you need for crucial information. Stop you from endless scrolling.")
+                            .font(.system(size: 15 * textSizeMultiplier))
+                            .foregroundColor(.secondary)
+                            .lineSpacing(4)
+                    }
+                    .padding(.vertical, 8)
                 }
-                .padding(.bottom, 16) // Add space below the header
-                
-                // Introduction Section
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("About Newsum")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Text("Newsum provides summaries of the headlines from various top sources and updated hourly. The app is all you need for crucial information. Stop you from endless scrolling.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .lineSpacing(4) // Improve readability
-                }
-                
-                Divider() // Visual separator
-                
-                // Version Information
-                HStack {
-                    Text("App Version")
-                        .font(.headline)
-                    Spacer()
-                    Text(appVersion() + " (" + buildNumber() + ")")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer() // Pushes content to the top
             }
-            .padding() // Add padding around the entire VStack
+            .listStyle(InsetGroupedListStyle())
+            .navigationTitle("Settings")
         }
     }
 
@@ -61,5 +80,5 @@ struct InfoView: View {
 }
 
 #Preview {
-    InfoView()
+    SettingsView()
 }

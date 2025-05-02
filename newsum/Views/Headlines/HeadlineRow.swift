@@ -10,6 +10,7 @@ import SwiftUI
 
 struct HeadlineRow: View {
     let headline: HeadlineSummary
+    @AppStorage("textSizeMultiplier") private var textSizeMultiplier: Double = 1.0
 
     var body: some View {
         // Wrap the entire content in a card-like container
@@ -49,20 +50,18 @@ struct HeadlineRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     // Source Name - Smaller, medium weight
                     Text(headline.sourceName)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.system(size: 11 * textSizeMultiplier, weight: .medium))
                         .foregroundColor(.secondary)
                         .lineLimit(1) // Ensure source doesn't wrap excessively
 
                     // Title - Regular weight, allows multiple lines
                     Text(headline.title)
-                        .font(.headline) // Use headline font style
-                        .fontWeight(.semibold) // Make it stand out a bit
+                        .font(.system(size: 16 * textSizeMultiplier, weight: .semibold))
                         .lineLimit(3) // Allow title to wrap
 
                     // Published Date - Relative format
                     Text(headline.publishedAt, style: .relative) // E.g., "5 minutes ago"
-                        .font(.footnote)
+                        .font(.system(size: 12 * textSizeMultiplier))
                         .foregroundColor(.gray)
                         .padding(.top, 2) // Add slight space above the date
                 }
