@@ -2,7 +2,8 @@ import SwiftUI
 
 struct HeadlineRow: View {
     let headline: HeadlineSummary
-
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // AsyncImage for loading image from URL
@@ -62,6 +63,24 @@ struct HeadlineRow: View {
                 .foregroundColor(.secondary)
         }
         .padding(.vertical, 8) // Add some vertical padding between items
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(backgroundColorForMode)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+    
+    // Custom background color based on color scheme
+    private var backgroundColorForMode: Color {
+        if colorScheme == .dark {
+            // Use a dark gray instead of black for dark mode
+            return Color(UIColor.systemGray6) // A lighter gray that's not too black
+        } else {
+            return Color.white
+        }
     }
 }
 
@@ -81,6 +100,13 @@ struct HeadlineRow: View {
         sourceUrl: "https://www.npr.org/"
     )
     
-    return HeadlineRow(headline: sampleHeadline)
-        .padding() // Add padding around the preview
+    Group {
+        HeadlineRow(headline: sampleHeadline)
+            .preferredColorScheme(.light)
+            .previewDisplayName("Light Mode")
+        
+        HeadlineRow(headline: sampleHeadline)
+            .preferredColorScheme(.dark)
+            .previewDisplayName("Dark Mode")
+    }
 } 
