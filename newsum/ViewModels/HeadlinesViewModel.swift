@@ -56,18 +56,33 @@ class HeadlineViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            headlines = try await networkManager.fetchLatestHeadlines()
-        } catch {
-            // Correctly use the extension method or helper function
-            if let networkError = error as? NetworkError {
-                errorMessage = networkError.userFriendlyMessage // Using the extension method
-            } else {
-                 // Use the general helper for other errors
-                errorMessage = error.localizedDescription // Using the global helper function
+            let fetchedHeadlines = try await networkManager.fetchLatestHeadlines()
+            // Only update headlines if we got data back
+            if !fetchedHeadlines.isEmpty {
+                headlines = fetchedHeadlines
             }
-            // You might choose one consistent approach (e.g., always use mapErrorToMessage(error))
-            print("Error loading headlines: \(errorMessage ?? "Unknown error")")
-             headlines = [] // Optionally clear data on error
+        } catch {
+            // Handle specific cancellation errors - don't clear the headlines
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Network request cancelled - preserving existing headlines")
+            } else if error is CancellationError {
+                print("Task cancelled - preserving existing headlines")
+            } else {
+                // Correctly use the extension method or helper function for other errors
+                if let networkError = error as? NetworkError {
+                    errorMessage = networkError.userFriendlyMessage // Using the extension method
+                } else {
+                    // Use the general helper for other errors
+                    errorMessage = error.localizedDescription // Using the global helper function
+                }
+                // You might choose one consistent approach (e.g., always use mapErrorToMessage(error))
+                print("Error loading headlines: \(errorMessage ?? "Unknown error")")
+                
+                // Only clear headlines for real errors, not cancellations
+                if headlines.isEmpty {
+                    print("No existing headlines to preserve")
+                }
+            }
         }
 
         isLoading = false
