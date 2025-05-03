@@ -16,6 +16,7 @@ struct HeadlineListView: View {
     @State private var isAnimating = false
     @State private var showRefreshToast = false
     @State private var isRefreshing = false
+    @State private var currentDate = Date() // Current date that will be updated on refresh
     
     init() {
         print("+++ HeadlineListView INIT +++")
@@ -60,16 +61,21 @@ struct HeadlineListView: View {
                         // Custom scroll view with headlines
                         ScrollView {
                             VStack(spacing: 0) {
-                                // Title for the section
-//                                HStack {
-//                                    Text("Summaries")
-//                                        .font(.title2)
-//                                        .fontWeight(.bold)
-//                                    
-//                                    Spacer()
-//                                }
-//                                .padding(.horizontal, 16)
-//                                .padding(.vertical, 8)
+                                // Your briefing section
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Summaries")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        
+                                    // Current date formatted like "Saturday, May 3"
+                                    Text(currentDate.formatted(date: .complete, time: .omitted))
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .padding(.bottom, 8)
                                 
                                 // Headlines
                                 ForEach(viewModel.headlines) { headline in
@@ -103,7 +109,7 @@ struct HeadlineListView: View {
                         }
                         .refreshable {
                             do {
-                                try await refreshHeadlines()
+                                try await refreshHeadlines() // This already updates the date
                             } catch is CancellationError {
                                 // Silently handle cancellation errors - this is normal during scrolling
                                 print("Refresh cancelled normally - not an error condition")
@@ -134,7 +140,7 @@ struct HeadlineListView: View {
                     .zIndex(1)
                 }
             }
-            .navigationTitle("Newsum")
+//            .navigationTitle("Newsum")
             .task {
                 print("--- HeadlineListView Appeared ---")
                 if viewModel.headlines.isEmpty {
@@ -154,6 +160,9 @@ struct HeadlineListView: View {
         
         isRefreshing = true
         let previousHeadlineCount = viewModel.headlines.count
+        
+        // Update current date to reflect latest refresh
+        currentDate = Date()
         
         // Create a task with a timeout
         do {
