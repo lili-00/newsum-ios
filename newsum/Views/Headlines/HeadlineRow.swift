@@ -70,7 +70,7 @@ struct HeadlineRow: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.1), radius:.pi * 2)
         .padding(.horizontal, 16)
