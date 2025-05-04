@@ -8,9 +8,10 @@
 import SwiftUI
 import SafariServices
 
-// Create a simple placeholder for the destination of the NavigationLink
 struct HeadlineDetailView: View {
     let headline: HeadlineSummary
+    var onDismiss: (() -> Void)
+    
     @State private var showCopiedToast: Bool = false
     @State private var showActionMenu: Bool = false
     @State private var showSafari: Bool = false
@@ -19,17 +20,18 @@ struct HeadlineDetailView: View {
     
     var body: some View {
         ZStack {
-            ScrollView { // Allow scrolling for potentially long content
+            // Main content
+            ScrollView {
                 VStack(alignment: .leading, spacing: 15) {
                     Text(headline.title)
                         .font(.system(size: 20 * textSizeMultiplier, weight: .bold))
                         .padding(.top, 4)
-
+                    
                     HStack(spacing: 4) {
                         Text("Source:")
                             .font(.system(size: 13 * textSizeMultiplier))
                             .foregroundColor(.secondary)
-
+                        
                         if let srcURL = URL(string: headline.sourceUrl) {
                             Link(headline.sourceName, destination: srcURL)
                                 .font(.system(size: 13 * textSizeMultiplier))
@@ -39,14 +41,14 @@ struct HeadlineDetailView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-
+                    
                     Text("Published: \(headline.publishedAt, style: .date) at \(headline.publishedAt, style: .time)")
                         .font(.system(size: 13 * textSizeMultiplier))
                         .foregroundColor(.gray)
-
+                    
                     Divider()
                     
-                    // Image placed here - after divider, before content
+                    // Image placed here
                     if let imageUrl = headline.imageUrl, let url = URL(string: imageUrl) {
                         AsyncImage(url: url) { phase in
                             if let image = phase.image {
@@ -66,20 +68,16 @@ struct HeadlineDetailView: View {
                         }
                         .padding(.vertical, 8)
                     }
-
+                    
                     Text(headline.summary)
                         .font(.system(size: 17 * textSizeMultiplier, design: .serif))
-                        // Add line spacing for better readability
                         .lineSpacing(5)
                     
                     Divider()
-
+                    
                     if let url = URL(string: headline.url) {
                         Button {
-                            // Set button pressed state for animation
                             isButtonPressed = true
-                            
-                            // Delay the action slightly to allow animation to complete
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                                 isButtonPressed = false
                                 showSafari = true
@@ -100,10 +98,60 @@ struct HeadlineDetailView: View {
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isButtonPressed)
                         .padding(.top, 8)
                     }
-
-                    Spacer() // Push content to top
+                    
+                    Spacer()
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top, 60) // Add padding for the custom toolbar
+            }
+            
+            // Custom fixed toolbar at the top
+            VStack(spacing: 0) {
+                // Toolbar with buttons
+                HStack {
+                    Button(action: {
+                        onDismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+//                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.primary)
+                            .padding(10)
+                            .background(Circle().fill(Color(.systemGray6)))
+                    }
+                    
+                    Spacer()
+                    
+                    Text(headline.sourceName)
+                    
+                    Spacer()
+                    
+//                    Button(action: {
+//                        showActionMenu = true
+//                    }) {
+//                        Image(systemName: "square.and.arrow.up")
+//                            .font(.system(size: 18, weight: .medium))
+//                            .foregroundColor(.primary)
+//                            .padding(10)
+//                            .background(Circle().fill(Color(.systemGray6)))
+//                    }
+                    
+                    Button(action: {
+                        showActionMenu = true
+                    }) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.primary)
+                            .padding(10)
+                            .background(Circle().fill(Color(.systemGray6)))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 6)
+                .background(Color(.systemBackground))
+                .frame(height: 40)
+                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                
+                Spacer()
             }
             
             // Toast notification
@@ -120,27 +168,7 @@ struct HeadlineDetailView: View {
                 }
                 .transition(.move(edge: .bottom))
                 .animation(.easeInOut(duration: 0.3), value: showCopiedToast)
-                .zIndex(1)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation {
-                            showCopiedToast = false
-                        }
-                    }
-                }
-            }
-        }
-        .navigationTitle(headline.sourceName)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    showActionMenu = true
-                }) {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 20))
-                        .foregroundColor(.primary)
-                }
+                .zIndex(3)
             }
         }
         .confirmationDialog("", isPresented: $showActionMenu, titleVisibility: .hidden) {
@@ -151,12 +179,15 @@ struct HeadlineDetailView: View {
                 withAnimation {
                     showCopiedToast = true
                 }
-            } label: {
-                HStack {
-                    Text("Copy Link")
-                    Spacer()
-                    Image(systemName: "link")
+                
+                // Auto-dismiss toast after 2 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        showCopiedToast = false
+                    }
                 }
+            } label: {
+                Text("Copy Link")
             }
             
             // Full Article option
@@ -164,13 +195,12 @@ struct HeadlineDetailView: View {
                 Button {
                     showSafari = true
                 } label: {
-                    HStack {
-                        Text("Full Article")
-                        Spacer()
-                        Image(systemName: "safari")
-                    }
+                    Text("Full Article")
                 }
             }
+            
+            // Cancel button
+            Button("Cancel", role: .cancel) { }
         }
         .fullScreenCover(isPresented: $showSafari) {
             if let url = URL(string: headline.url) {
@@ -178,13 +208,13 @@ struct HeadlineDetailView: View {
                     .ignoresSafeArea()
             }
         }
+        .background(Color(.systemBackground))
     }
 }
 
 // Safari View for opening URLs in Safari
 struct SafariView: UIViewControllerRepresentable {
     let url: URL
-    @Environment(\.presentationMode) var presentationMode
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
         let safariVC = SFSafariViewController(url: url)
@@ -210,7 +240,7 @@ struct SafariView: UIViewControllerRepresentable {
         }
         
         func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-            parent.presentationMode.wrappedValue.dismiss()
+            // Handle dismissal in the parent view
         }
     }
 }
@@ -229,8 +259,8 @@ struct SafariView: UIViewControllerRepresentable {
         sourceUrl: "https://localgazette.com"
     )
 
-    // 2. Wrap in a NavigationStack so the nav‐title shows
-    NavigationStack {
-        HeadlineDetailView(headline: sampleHeadline)
-    }
+    // Display directly without NavigationStack
+    HeadlineDetailView(headline: sampleHeadline, onDismiss: {
+        print("Dismiss action triggered in preview")
+    })
 }

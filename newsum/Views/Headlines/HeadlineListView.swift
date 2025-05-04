@@ -17,148 +17,160 @@ struct HeadlineListView: View {
     @State private var showRefreshToast = false
     @State private var isRefreshing = false
     @State private var currentDate = Date() // Current date that will be updated on refresh
+    @State private var selectedHeadline: HeadlineSummary? = nil
+    @State private var showHeadlineDetail = false
     
     init() {
         print("+++ HeadlineListView INIT +++")
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Background color
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
-                
-                // Main content
-                VStack {
-                    if viewModel.isLoading && viewModel.headlines.isEmpty {
-                        // Show loading indicator only on initial load
-                        ProgressView("Fetching headlines...")
-                    } else if let errorMessage = viewModel.errorMessage {
-                        // Show error message and retry button
-                        ErrorView(errorMessage: errorMessage) {
-                            // Retry action
-                            Task {
-                                try? await refreshHeadlines()
-                            }
-                        }
-                    } else if viewModel.headlines.isEmpty {
-                        // Show message if list is empty after loading (and no error)
-                        VStack(spacing: 12) {
-                            Text("No headlines available at the moment. Check back later!")
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding()
-                            
-                            Button("Retry") {
-                                Task {
-                                    try? await refreshHeadlines()
+        ZStack {
+            if showHeadlineDetail, let headline = selectedHeadline {
+                // Detail view when a headline is selected
+                HeadlineDetailView(headline: headline, onDismiss: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showHeadlineDetail = false
+                        selectedHeadline = nil
+                    }
+                })
+                .transition(.move(edge: .trailing))
+                .zIndex(1)
+            } else {
+                // Main list view
+                NavigationView {
+                    ZStack {
+                        // Background color
+                        Color(.systemGroupedBackground)
+                            .ignoresSafeArea()
+                        
+                        // Main content
+                        VStack {
+                            if viewModel.isLoading && viewModel.headlines.isEmpty {
+                                // Show loading indicator only on initial load
+                                ProgressView("Fetching headlines...")
+                            } else if let errorMessage = viewModel.errorMessage {
+                                // Show error message and retry button
+                                ErrorView(errorMessage: errorMessage) {
+                                    // Retry action
+                                    Task {
+                                        try? await refreshHeadlines()
+                                    }
                                 }
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                    } else {
-                        // Custom scroll view with headlines
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                // Your briefing section
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Summaries")
-                                        .font(.largeTitle)
-                                        .fontWeight(.bold)
-                                        
-                                    // Current date formatted like "Saturday, May 3"
-                                    Text(currentDate.formatted(date: .complete, time: .omitted))
-                                        .font(.headline)
+                            } else if viewModel.headlines.isEmpty {
+                                // Show message if list is empty after loading (and no error)
+                                VStack(spacing: 12) {
+                                    Text("No headlines available at the moment. Check back later!")
                                         .foregroundColor(.secondary)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .padding(.bottom, 8)
-                                
-                                // Headlines
-                                ForEach(viewModel.headlines) { headline in
-                                    ZStack {
-                                        NavigationLink(destination: HeadlineDetailView(headline: headline), 
-                                                      isActive: Binding(
-                                                        get: { selectedHeadlineID == headline.id && !isAnimating },
-                                                        set: { _ in }
-                                                      )) {
-                                            EmptyView()
+                                        .multilineTextAlignment(.center)
+                                        .padding()
+                                    
+                                    Button("Retry") {
+                                        Task {
+                                            try? await refreshHeadlines()
                                         }
-                                        .opacity(0)
-                                        
-                                        HeadlineRow(headline: headline)
-                                            .scaleEffect(selectedHeadlineID == headline.id && isAnimating ? 0.95 : 1.0)
-                                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedHeadlineID == headline.id && isAnimating)
-                                            .onTapGesture {
-                                                // Set selected ID and trigger animation
-                                                selectedHeadlineID = headline.id
-                                                isAnimating = true
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                }
+                            } else {
+                                // Custom scroll view with headlines
+                                ScrollView {
+                                    VStack(spacing: 0) {
+                                        // Your briefing section
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Summaries")
+                                                .font(.largeTitle)
+                                                .fontWeight(.bold)
                                                 
-                                                // Small delay before navigation to allow animation to complete
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                                    isAnimating = false
+                                            // Current date formatted like "Saturday, May 3"
+                                            Text(currentDate.formatted(date: .complete, time: .omitted))
+                                                .font(.headline)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        .padding(.bottom, 8)
+                                        
+                                        // Headlines
+                                        ForEach(viewModel.headlines) { headline in
+                                            HeadlineRow(headline: headline)
+                                                .scaleEffect(selectedHeadlineID == headline.id && isAnimating ? 0.95 : 1.0)
+                                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedHeadlineID == headline.id && isAnimating)
+                                                .onTapGesture {
+                                                    // Set selected ID and trigger animation
+                                                    selectedHeadlineID = headline.id
+                                                    isAnimating = true
+                                                    
+                                                    // Set the selected headline and prepare to show detail
+                                                    selectedHeadline = headline
+                                                    
+                                                    // Small delay before showing sheet to allow animation to complete
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                                        isAnimating = false
+                                                        withAnimation(.easeInOut) {
+                                                            showHeadlineDetail = true
+                                                        }
+                                                    }
                                                 }
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                }
+                                .refreshable {
+                                    print("Pull-to-refresh triggered")
+                                    currentDate = Date()
+                                    
+                                    // Use a dedicated task to prevent cancellation issues
+                                    let task = Task {
+                                        await viewModel.loadHeadlines()
+                                    }
+                                    await task.value
+                                    
+                                    // Show toast on successful refresh
+                                    if viewModel.headlines.count > 0 && viewModel.errorMessage == nil {
+                                        withAnimation {
+                                            showRefreshToast = true
+                                        }
+                                        
+                                        // Auto-dismiss toast after 2 seconds
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            withAnimation {
+                                                showRefreshToast = false
                                             }
-                                    }
-                                }
-                            }
-                            .padding(.vertical, 8)
-                        }
-                        .refreshable {
-                            print("Pull-to-refresh triggered")
-                            currentDate = Date()
-                            
-                            // Use a dedicated task to prevent cancellation issues
-                            let task = Task {
-                                await viewModel.loadHeadlines()
-                            }
-                            await task.value
-                            
-                            // Show toast on successful refresh
-                            if viewModel.headlines.count > 0 && viewModel.errorMessage == nil {
-                                withAnimation {
-                                    showRefreshToast = true
-                                }
-                                
-                                // Auto-dismiss toast after 2 seconds
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    withAnimation {
-                                        showRefreshToast = false
+                                        }
                                     }
                                 }
                             }
                         }
+                        
+                        // Success toast notification
+                        if showRefreshToast {
+                            VStack {
+                                Spacer()
+                                Text("Headlines updated")
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(Color.black.opacity(0.7))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(20)
+                                    .padding(.bottom, 40)
+                            }
+                            .transition(.move(edge: .bottom))
+                            .animation(.easeInOut, value: showRefreshToast)
+                            .zIndex(1)
+                        }
                     }
-                }
-                
-                // Success toast notification
-                if showRefreshToast {
-                    VStack {
-                        Spacer()
-                        Text("Headlines updated")
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color.black.opacity(0.7))
-                            .foregroundColor(.white)
-                            .cornerRadius(20)
-                            .padding(.bottom, 40)
+//                    .navigationTitle("Newsum")
+                    .task {
+                        print("--- HeadlineListView Appeared ---")
+                        if viewModel.headlines.isEmpty {
+                            print("Condition met, calling refreshHeadlines")
+                            try? await refreshHeadlines()
+                        } else {
+                            print("Condition NOT met, headlines not empty")
+                        }
                     }
-                    .transition(.move(edge: .bottom))
-                    .animation(.easeInOut, value: showRefreshToast)
-                    .zIndex(1)
-                }
-            }
-//            .navigationTitle("Newsum")
-            .task {
-                print("--- HeadlineListView Appeared ---")
-                if viewModel.headlines.isEmpty {
-                    print("Condition met, calling refreshHeadlines")
-                    try? await refreshHeadlines()
-                } else {
-                    print("Condition NOT met, headlines not empty")
                 }
             }
         }

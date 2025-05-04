@@ -18,7 +18,7 @@ struct ContentView: View {
             Group {
                 HeadlineListView()
                     .tabItem {
-                        Label("Headlines", systemImage: "newspaper")
+                        Label("Headlines", systemImage: "doc.text.image")
                     }
                     .environment(\.sizeCategory, sizeCategory)
                 
