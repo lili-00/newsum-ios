@@ -124,6 +124,7 @@ struct HeadlineDetailView: View {
                     Spacer()
                     
                     Text(headline.sourceName)
+                        .font(.system(size: 16 * textSizeMultiplier, weight: .bold, design: .monospaced))
                     
                     Spacer()
                     
@@ -211,6 +212,17 @@ struct HeadlineDetailView: View {
             }
         }
         .background(Color(.systemBackground))
+        .gesture(
+            DragGesture()
+                .onEnded { gesture in
+                    // If swiped right more than 100 points, dismiss
+                    if gesture.translation.width > 100 {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            onDismiss()
+                        }
+                    }
+                }
+        )
     }
 }
 
