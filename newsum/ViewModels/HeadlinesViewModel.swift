@@ -54,12 +54,24 @@ class HeadlineViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
+        
+        // Create a dedicated task for network operation
+        let task = Task { () -> [HeadlineSummary] in
+            try await networkManager.fetchLatestHeadlines()
+        }
 
         do {
-            let fetchedHeadlines = try await networkManager.fetchLatestHeadlines()
-            // Only update headlines if we got data back
+            let fetchedHeadlines = try await task.value
+            
+            // Check for task cancellation
+            try Task.checkCancellation()
+            
+            // Only update headlines if we got data back and task wasn't cancelled
             if !fetchedHeadlines.isEmpty {
                 headlines = fetchedHeadlines
+                print("Headlines updated successfully with \(fetchedHeadlines.count) items")
+            } else {
+                print("No headlines received from network call")
             }
         } catch {
             // Handle specific cancellation errors - don't clear the headlines

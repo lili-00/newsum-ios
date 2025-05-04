@@ -29,13 +29,23 @@ class NetworkManager {
         print("Fetching Headlines from: \(url)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        
+        // Set a longer timeout
+        request.timeoutInterval = 30
 
         let data: Data
         let response: URLResponse
 
         // Step 1: Perform Network Request
         do {
-            (data, response) = try await URLSession.shared.data(for: request)
+            // Create a specific URLSession for headlines with longer timeout
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = 30
+            config.timeoutIntervalForResource = 60
+            let session = URLSession(configuration: config)
+            
+            // Use the custom session with longer timeout
+            (data, response) = try await session.data(for: request)
         } catch {
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("Request cancelled in NetworkManager (Headlines).")

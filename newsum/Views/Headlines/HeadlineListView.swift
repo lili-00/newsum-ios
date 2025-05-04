@@ -108,16 +108,27 @@ struct HeadlineListView: View {
                             .padding(.vertical, 8)
                         }
                         .refreshable {
-                            do {
-                                try await refreshHeadlines() // This already updates the date
-                            } catch is CancellationError {
-                                // Silently handle cancellation errors - this is normal during scrolling
-                                print("Refresh cancelled normally - not an error condition")
-                                isRefreshing = false
-                            } catch {
-                                // Ensure we reset the refreshing state even on error
-                                print("Refresh error: \(error)")
-                                isRefreshing = false
+                            print("Pull-to-refresh triggered")
+                            currentDate = Date()
+                            
+                            // Use a dedicated task to prevent cancellation issues
+                            let task = Task {
+                                await viewModel.loadHeadlines()
+                            }
+                            await task.value
+                            
+                            // Show toast on successful refresh
+                            if viewModel.headlines.count > 0 && viewModel.errorMessage == nil {
+                                withAnimation {
+                                    showRefreshToast = true
+                                }
+                                
+                                // Auto-dismiss toast after 2 seconds
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showRefreshToast = false
+                                    }
+                                }
                             }
                         }
                     }
@@ -159,19 +170,23 @@ struct HeadlineListView: View {
         guard !isRefreshing else { return }
         
         isRefreshing = true
-        let previousHeadlineCount = viewModel.headlines.count
+        print("Starting headline refresh...")
         
         // Update current date to reflect latest refresh
         currentDate = Date()
         
-        // Create a task with a timeout
+        // Create a dedicated task to avoid cancellation from SwiftUI refresh
+        let refreshTask = Task {
+            await viewModel.loadHeadlines()
+        }
+        
         do {
-            try await withTimeout(seconds: 10) {
-                await viewModel.loadHeadlines()
-            }
+            // Wait for the task to complete
+            _ = await refreshTask.value
             
-            // If we get here, the refresh was successful
+            // Show success toast if we have headlines
             if viewModel.errorMessage == nil && viewModel.headlines.count > 0 {
+                print("Headlines refreshed successfully: \(viewModel.headlines.count) items")
                 // Show success toast
                 withAnimation {
                     showRefreshToast = true
@@ -183,35 +198,17 @@ struct HeadlineListView: View {
                         showRefreshToast = false
                     }
                 }
-            }
-            
-            // Reset refreshing state on success
-            isRefreshing = false
-        } catch {
-            // Handle timeout or other errors
-            if let urlError = error as? URLError, urlError.code == .cancelled {
-                // This is a normal cancellation during scroll - don't show error
-                print("Request cancelled during refresh - this is normal behavior")
-                // Don't set an error message for normal cancellations during scrolling
-                viewModel.errorMessage = nil
-            } else if error is CancellationError {
-                // Handle cancellation errors (from task cancellation) - don't show as an error
-                print("Task cancelled during refresh - this is normal behavior")
-                // Clear any previous error message so it doesn't display
-                viewModel.errorMessage = nil
-            } else if error is TimeoutError {
-                viewModel.errorMessage = "Request timed out. Please try again."
+            } else if let error = viewModel.errorMessage {
+                print("Refresh completed with error: \(error)")
             } else {
-                // For other errors, set the error message
-                viewModel.errorMessage = error.localizedDescription
+                print("Refresh completed but no headlines found")
             }
-            
-            // Reset refreshing state on error
-            isRefreshing = false
-            
-            // Re-throw to indicate failure to refreshable
-            throw error 
+        } catch {
+            print("Error during refresh: \(error.localizedDescription)")
+            // Error handling remains the same
         }
+        
+        isRefreshing = false
     }
     
     // Improved timeout function that properly handles cancellation
