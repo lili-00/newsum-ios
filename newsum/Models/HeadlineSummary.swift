@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct HeadlineSummary: Decodable, Identifiable {
+struct HeadlineSummary: Decodable, Identifiable, Hashable {
     let id = UUID()
     let title: String
     let description: String
@@ -76,6 +76,15 @@ struct HeadlineSummary: Decodable, Identifiable {
         } else {
             summaryGeneratedAt = nil
         }
+    }
+
+    // Hashable conformance
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: HeadlineSummary, rhs: HeadlineSummary) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

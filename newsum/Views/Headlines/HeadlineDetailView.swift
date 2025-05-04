@@ -11,6 +11,7 @@ import SafariServices
 struct HeadlineDetailView: View {
     let headline: HeadlineSummary
     var onDismiss: (() -> Void)
+    @Environment(\.presentationMode) private var presentationMode
     
     @State private var showCopiedToast: Bool = false
     @State private var showActionMenu: Bool = false
@@ -110,10 +111,11 @@ struct HeadlineDetailView: View {
                 // Toolbar with buttons
                 HStack {
                     Button(action: {
-                        onDismiss()
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            onDismiss()
+                        }
                     }) {
                         Image(systemName: "chevron.left")
-//                            .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.primary)
                             .padding(10)
                             .background(Circle().fill(Color(.systemGray6)))
