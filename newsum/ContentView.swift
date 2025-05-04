@@ -27,7 +27,7 @@ struct ContentView: View {
                         Label("Settings", systemImage: "gear")
                     }
             }
-            .toolbarBackground(Color(.systemGroupedBackground), for: .tabBar)
+            .toolbarBackground(Color(.tertiarySystemGroupedBackground), for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)
         }
     }
